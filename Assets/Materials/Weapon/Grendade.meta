@@ -1,5 +1,12 @@
 fileFormatVersion: 2
+
 guid: 3002cbab337a78a40ae3ca0437fd27e7
+HEAD:Assets/Animations.meta
+guid: d7555fd1a0f0d1345a403902829500b0
+
+guid: 3002cbab337a78a40ae3ca0437fd27e7
+ origin/Joe:Assets/Materials/Weapon/Grendade.meta
+ origin/Joe
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}

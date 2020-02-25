@@ -169,7 +169,10 @@ public class UIManager : MonoBehaviour
     public static void toggleInspectUI()
     {
         inspecting = !inspecting;
+
         toggleGameplayUI();
+
+
         BarrelCycler.SetActive(!BarrelCycler.activeInHierarchy);
         GripCycler.SetActive(!GripCycler.activeInHierarchy);
     }
