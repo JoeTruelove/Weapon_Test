@@ -1,10 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Enemy : MonoBehaviour
 {
     public GameObject Player;
+
+    public Transform _destination;
+    public NavMeshAgent _navMeshAgent;
 
     public Material normal;
     public Material hurt;
@@ -26,7 +30,17 @@ public class Enemy : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Player = GameObject.Find("Character");
+        _navMeshAgent = this.GetComponent<NavMeshAgent>();
+
+        if(_navMeshAgent == null)
+        {
+            Debug.LogError("The nav mesh agent is not attached to " + gameObject.name);
+        }
+        else
+        {
+            SetDestination();
+        }
+        //Player = GameObject.Find("Character");
         hurtFrames = hurtDuration;
         
         animator = GetComponent<Animator>();
@@ -53,7 +67,7 @@ public class Enemy : MonoBehaviour
                 isHurt = false;
             }
         }
-        transform.position = Vector3.MoveTowards(transform.position,Player.transform.position, Speed * Time.deltaTime);
+        //transform.position = Vector3.MoveTowards(transform.position,Player.transform.position, Speed * Time.deltaTime);
 
         RaycastHit hit;
         Physics.Raycast(transform.position, -transform.up, out hit, Mathf.Infinity, 1 << 10);
@@ -67,7 +81,14 @@ public class Enemy : MonoBehaviour
         animator.SetBool("isWalking", true);
         isWalking = true;
     }
-
+    private void SetDestination()
+    {
+        if(_destination != null)
+        {
+            Vector3 targetVector = _destination.transform.position;
+            _navMeshAgent.SetDestination(targetVector);
+        }
+    }
     public void takeDamage(int damageToTake = 1)
     {
         Health -= damageToTake;
@@ -80,8 +101,6 @@ public class Enemy : MonoBehaviour
             GameManager.RemoveEnemy(transform.gameObject);
             UIManager.updateScore(5);
             SkillManager.grantXP(1);
-
-            animator.SetBool("isDying", true);
         }
         if (isHurt) return;
         MR.material = hurt;

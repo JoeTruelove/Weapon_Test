@@ -58,6 +58,10 @@ public class GameManager : MonoBehaviour
                 {
                     UIManager.roundInfoPanel.SetActive(true);
                 }
+                GracePeriodTime -= Time.deltaTime;
+                UIManager.updateRoundCountdown(GracePeriodTime);
+
+                if (GracePeriodTime <= 0f)
                 {
                     UIManager.updateRoundEnemies(EnenmiesLeft);
                     firstWave = true;
