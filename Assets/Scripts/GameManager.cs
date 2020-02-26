@@ -4,7 +4,7 @@ using UnityEngine;
 
 public enum GameStage
 {
-    diskRaise,
+    ElevatorRaise,
     gracePeriod,
     roundInProgress,
     roundOver
@@ -15,12 +15,12 @@ public class GameManager : MonoBehaviour
     public static bool DebugMode = true;
     public GameStage GameFlow;
     public List<GameObject> Spawners;
-    public GameObject Disk;
+    public Animator animator;
     public GameObject Player;
     public GameObject Enemy;
 
-    public int GracePeriodLength = 30;
-    int GracePeriodFrames;
+    public float GracePeriodLength = 30f;
+    float GracePeriodTime;
 
     bool firstWave = false;
     public int EnenmyLimit = 10; //Amount of Enemies that can be spawned in at a time
@@ -35,11 +35,11 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        GameFlow = GameStage.diskRaise;
-        GracePeriodFrames = GracePeriodLength * 90;
+        GameFlow = GameStage.ElevatorRaise;
         EnenmiesLeft = EnenmyInRound;
         EnenmiesLeftToSpawn = EnenmyInRound;
         enemies = new List<GameObject>(EnenmyLimit);
+        GracePeriodTime = GracePeriodLength;
     }
 
     // Update is called once per frame
@@ -47,29 +47,17 @@ public class GameManager : MonoBehaviour
     {
         switch (GameFlow)
         {
-            case GameStage.diskRaise:
+            case GameStage.ElevatorRaise:
 
-                Disk.transform.position = Vector3.MoveTowards(Disk.transform.position, new Vector3(0,-0.5f,0), Time.deltaTime/2);
-                if (Disk.transform.position == new Vector3(0, -0.5f, 0))
-                {
-                    GameFlow = GameStage.gracePeriod;
-                }
+                animator.SetBool("Elevate", false);
+                GameFlow = GameStage.gracePeriod;
+                
                 break;
             case GameStage.gracePeriod:
                 if (!UIManager.roundInfoPanel.activeInHierarchy && (!UIManager.inspecting && !UIManager.SkillMenuActive))
                 {
                     UIManager.roundInfoPanel.SetActive(true);
                 }
-                GracePeriodFrames--;
-                if (GracePeriodFrames % 90 == 0 && GracePeriodFrames > 0)
-                {
-                    GracePeriodLength--;
-                    if (UIManager.roundInfoPanel.activeInHierarchy && (!UIManager.inspecting && !UIManager.SkillMenuActive))
-                    {
-                        UIManager.updateRoundCountdown(GracePeriodLength);
-                    }
-                }
-                else if (GracePeriodFrames == 0)
                 {
                     UIManager.updateRoundEnemies(EnenmiesLeft);
                     firstWave = true;

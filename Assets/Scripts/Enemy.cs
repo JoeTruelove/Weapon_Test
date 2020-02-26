@@ -73,13 +73,14 @@ public class Enemy : MonoBehaviour
         Health -= damageToTake;
         if (GameManager.DebugMode)
         {
-            Debug.Log(transform.name + ": Hit");
+            Debug.Log(transform.name + " Took " + damageToTake + " damage, Remaing Health: " + Health);
         }
         if (Health <= 0)
         {
             GameManager.RemoveEnemy(transform.gameObject);
             UIManager.updateScore(5);
             SkillManager.grantXP(1);
+
             animator.SetBool("isDying", true);
         }
         if (isHurt) return;
