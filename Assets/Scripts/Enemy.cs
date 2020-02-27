@@ -7,8 +7,8 @@ public class Enemy : MonoBehaviour
 {
     public GameObject Player;
 
-    public Transform _destination;
-    public NavMeshAgent _navMeshAgent;
+    public Transform destination;
+    NavMeshAgent navMeshAgent;
 
     public Material normal;
     public Material hurt;
@@ -30,17 +30,10 @@ public class Enemy : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        _navMeshAgent = this.GetComponent<NavMeshAgent>();
+        navMeshAgent = this.GetComponent<NavMeshAgent>();
 
-        if(_navMeshAgent == null)
-        {
-            Debug.LogError("The nav mesh agent is not attached to " + gameObject.name);
-        }
-        else
-        {
-            SetDestination();
-        }
-        //Player = GameObject.Find("Character");
+        
+        Player = GameObject.Find("Character");
         hurtFrames = hurtDuration;
         
         animator = GetComponent<Animator>();
@@ -49,7 +42,8 @@ public class Enemy : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(attackFrames > 0)
+        destination = Player.transform;
+        if (attackFrames > 0)
         {
             attackFrames--;
         }
@@ -69,13 +63,22 @@ public class Enemy : MonoBehaviour
         }
         //transform.position = Vector3.MoveTowards(transform.position,Player.transform.position, Speed * Time.deltaTime);
 
-        RaycastHit hit;
-        Physics.Raycast(transform.position, -transform.up, out hit, Mathf.Infinity, 1 << 10);
-        transform.position = new Vector3(transform.position.x,hit.point.y, transform.position.z);
+        //RaycastHit hit;
+        //Physics.Raycast(transform.position, -transform.up, out hit, Mathf.Infinity, 1 << 10);
+        //transform.position = new Vector3(transform.position.x,hit.point.y, transform.position.z);
 
 
-        transform.LookAt(Player.transform.position,transform.up);
-        transform.eulerAngles = new Vector3(0f, transform.eulerAngles.y, 0f);
+        //transform.LookAt(Player.transform.position,transform.up);
+        //transform.eulerAngles = new Vector3(0f, transform.eulerAngles.y, 0f);
+
+        if (navMeshAgent == null)
+        {
+            Debug.LogError("The nav mesh agent componenet is not attached to " + gameObject.name);
+        }
+        else
+        {
+            SetDestination();
+        }
 
 
         animator.SetBool("isWalking", true);
@@ -83,10 +86,10 @@ public class Enemy : MonoBehaviour
     }
     private void SetDestination()
     {
-        if(_destination != null)
+        if (destination != null)
         {
-            Vector3 targetVector = _destination.transform.position;
-            _navMeshAgent.SetDestination(targetVector);
+            Vector3 targetVector = destination.transform.position;
+            navMeshAgent.SetDestination(targetVector);
         }
     }
     public void takeDamage(int damageToTake = 1)
