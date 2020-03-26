@@ -1,18 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
 public class Enemy : MonoBehaviour
 {
     public GameObject Player;
 
-    public Transform destination;
-    NavMeshAgent navMeshAgent;
-
     public Material normal;
-    public Material hurt;
-    public MeshRenderer MR;
+    public Material Death;
+    public SkinnedMeshRenderer MR;
     private Animator animator;
 
     bool isHurt = false;
@@ -22,17 +18,18 @@ public class Enemy : MonoBehaviour
     public int attackFrames;
     public int hurtFrames;
     public bool isWalking = false;
+    public bool isDissolving = false;
+    public float _Time = 0f;
+    public int DissolveTime;
 
-    public int Health = 10;
+    public float Health = 10f;
 
     public float Speed = 2.5f;
 
     // Start is called before the first frame update
     void Start()
     {
-        navMeshAgent = this.GetComponent<NavMeshAgent>();
-
-        
+        _Time = 0f;
         Player = GameObject.Find("Character");
         hurtFrames = hurtDuration;
         
@@ -42,8 +39,7 @@ public class Enemy : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        destination = Player.transform;
-        if (attackFrames > 0)
+        if(attackFrames > 0)
         {
             attackFrames--;
         }
@@ -61,38 +57,33 @@ public class Enemy : MonoBehaviour
                 isHurt = false;
             }
         }
-        //transform.position = Vector3.MoveTowards(transform.position,Player.transform.position, Speed * Time.deltaTime);
-
-        //RaycastHit hit;
-        //Physics.Raycast(transform.position, -transform.up, out hit, Mathf.Infinity, 1 << 10);
-        //transform.position = new Vector3(transform.position.x,hit.point.y, transform.position.z);
-
-
-        //transform.LookAt(Player.transform.position,transform.up);
-        //transform.eulerAngles = new Vector3(0f, transform.eulerAngles.y, 0f);
-
-        if (navMeshAgent == null)
+        if (isDissolving)
         {
-            Debug.LogError("The nav mesh agent componenet is not attached to " + gameObject.name);
+            _Time += Time.deltaTime * DissolveTime;
+            if (_Time >= 8)
+            {
+                _Time = 0f;
+                isDissolving = false;
+                GameManager.RemoveEnemy(transform.gameObject);
+            }
+            Death.SetFloat("Time", _Time);
         }
-        else
-        {
-            SetDestination();
-        }
+        transform.position = Vector3.MoveTowards(transform.position,Player.transform.position, Speed * Time.deltaTime);
+
+        RaycastHit hit;
+        Physics.Raycast(transform.position, -transform.up, out hit, Mathf.Infinity, 1 << 10);
+        transform.position = new Vector3(transform.position.x,hit.point.y, transform.position.z);
+
+
+        transform.LookAt(Player.transform.position,transform.up);
+        transform.eulerAngles = new Vector3(0f, transform.eulerAngles.y, 0f);
 
 
         animator.SetBool("isWalking", true);
         isWalking = true;
     }
-    private void SetDestination()
-    {
-        if (destination != null)
-        {
-            Vector3 targetVector = destination.transform.position;
-            navMeshAgent.SetDestination(targetVector);
-        }
-    }
-    public void takeDamage(int damageToTake = 1)
+
+    public void takeDamage(float damageToTake = 1)
     {
         Health -= damageToTake;
         if (GameManager.DebugMode)
@@ -101,13 +92,12 @@ public class Enemy : MonoBehaviour
         }
         if (Health <= 0)
         {
-            GameManager.RemoveEnemy(transform.gameObject);
+            MR.material = Death;
+            isDissolving = true;
+            //GameManager.RemoveEnemy(transform.gameObject);
             UIManager.updateScore(5);
             SkillManager.grantXP(1);
         }
-        if (isHurt) return;
-        MR.material = hurt;
-        isHurt = true;
     }
 
     private void OnCollisionEnter(Collision collision)

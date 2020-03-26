@@ -15,9 +15,9 @@ public class GameManager : MonoBehaviour
     public static bool DebugMode = true;
     public GameStage GameFlow;
     public List<GameObject> Spawners;
-    public Animator animator;
     public GameObject Player;
     public GameObject Enemy;
+    public Animator animator;
 
     public float GracePeriodLength = 30f;
     float GracePeriodTime;
@@ -51,7 +51,7 @@ public class GameManager : MonoBehaviour
 
                 animator.SetBool("Elevate", false);
                 GameFlow = GameStage.gracePeriod;
-                
+
                 break;
             case GameStage.gracePeriod:
                 if (!UIManager.roundInfoPanel.activeInHierarchy && (!UIManager.inspecting && !UIManager.SkillMenuActive))
@@ -137,7 +137,7 @@ public class GameManager : MonoBehaviour
     {
         GameObject spawnPoint = FindBestSpawner();
         GameObject tempEnemy = Instantiate<GameObject>(Enemy);
-        tempEnemy.transform.position = new Vector3(spawnPoint.transform.position.x, /*0.89f*/ 1, spawnPoint.transform.position.z);
+        tempEnemy.transform.position = new Vector3(spawnPoint.transform.position.x, 0.89f, spawnPoint.transform.position.z);
         enemies.Add(tempEnemy);
         EnenmiesLeftToSpawn--;
     }
