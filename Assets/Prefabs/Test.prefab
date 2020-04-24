@@ -1619,11 +1619,12 @@ GameObject:
   - component: {fileID: 1508314318342955544}
   - component: {fileID: 3978850369253752722}
   - component: {fileID: 3978850369253752723}
+  - component: {fileID: 6325418564306349462}
   - component: {fileID: 3978850369253752724}
-  - component: {fileID: 3978850369253752726}
+  - component: {fileID: -3422599601126339379}
   m_Layer: 9
   m_Name: Test
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1671,12 +1672,12 @@ CapsuleCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1508314318350242264}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
-  m_Radius: 0.49648523
-  m_Height: 3.67
+  m_Radius: 0.5
+  m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: 1.52, z: 0.53}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!137 &3978850369253752723
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
@@ -1781,6 +1782,35 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.46814716, y: 0.003799677, z: -0.27764684}
     m_Extent: {x: 1.8801006, y: 1.1451434, z: 1.5648618}
   m_DirtyAABB: 0
+--- !u!114 &6325418564306349462
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1508314318350242264}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5914a47d8db9b614aa22ef12365c2b9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uim: {fileID: 0}
+  gm: {fileID: 0}
+  sm: {fileID: 0}
+  Player: {fileID: 0}
+  normal: {fileID: 2100000, guid: f4498c2020b78d54e968cea5a6b26b44, type: 2}
+  Death: {fileID: 2100000, guid: cb5054446d66c584683254e59b816607, type: 2}
+  MR: {fileID: 3978850369253752723}
+  hurtDuration: 5
+  hurtFrames: 0
+  isWalking: 0
+  isDissolving: 0
+  _Time: 0
+  DissolveTime: 0
+  Health: 10
+  speed: 1
+  fovAngle: 110
+  sightDist: 2
 --- !u!195 &3978850369253752724
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -1803,33 +1833,19 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &3978850369253752726
-MonoBehaviour:
+--- !u!135 &-3422599601126339379
+SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1508314318350242264}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5914a47d8db9b614aa22ef12365c2b9b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Player: {fileID: 0}
-  normal: {fileID: 2100000, guid: f4498c2020b78d54e968cea5a6b26b44, type: 2}
-  Death: {fileID: 2100000, guid: cb5054446d66c584683254e59b816607, type: 2}
-  MR: {fileID: 3978850369253752723}
-  hurtDuration: 5
-  attackDuration: 20
-  attackFrames: 0
-  hurtFrames: 0
-  isWalking: 0
-  isDissolving: 0
-  _Time: 0
-  DissolveTime: 5
-  Health: 10
-  Speed: 1
-  destination: {fileID: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1508314318350242266
 GameObject:
   m_ObjectHideFlags: 0
