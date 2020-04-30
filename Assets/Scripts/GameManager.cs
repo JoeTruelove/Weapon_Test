@@ -4,7 +4,6 @@ using UnityEngine;
 
 public enum GameStage
 {
-    ElevatorRaise,
     gracePeriod,
     roundInProgress,
     roundOver
@@ -19,8 +18,8 @@ public class GameManager : MonoBehaviour
     public GameStage GameFlow;
     public List<GameObject> Spawners;
     public GameObject Player;
-    public GameObject Enemy;
-    public Animator animator;
+    public List<GameObject> Enemy;
+
 
     public float GracePeriodLength = 30f;
     float GracePeriodTime;
@@ -33,12 +32,14 @@ public class GameManager : MonoBehaviour
     public int framesBetweenEnemies = 240; //Number of frames in between enemy spawns
     public int EnemySpawnFrames; //Number of frames before the next enemy can spawn
     public int EnemiesInFirstSpawn = 5; //Number of enemies in the first spawn
+    public bool PlayerSpotted = false; //Determine whether the player has been spotted
     static List<GameObject> enemies;
+    public LightController[] lightController;
 
     // Start is called before the first frame update
     void Start()
     {
-        GameFlow = GameStage.ElevatorRaise;
+        GameFlow = GameStage.gracePeriod;
         EnenmiesLeft = EnenmyInRound;
         EnenmiesLeftToSpawn = EnenmyInRound;
         enemies = new List<GameObject>(EnenmyLimit);
@@ -50,12 +51,6 @@ public class GameManager : MonoBehaviour
     {
         switch (GameFlow)
         {
-            case GameStage.ElevatorRaise:
-
-                animator.SetBool("Elevate", false);
-                GameFlow = GameStage.gracePeriod;
-
-                break;
             case GameStage.gracePeriod:
                 if (!uim.roundInfoPanel.activeInHierarchy && (!uim.inspecting && !uim.SkillMenuActive))
                 {
@@ -138,9 +133,25 @@ public class GameManager : MonoBehaviour
 
     void SpawnEnemy()
     {
+        int whichEnemy = (Random.Range(0, Enemy.Count));
         GameObject spawnPoint = FindBestSpawner();
-        GameObject tempEnemy = Instantiate<GameObject>(Enemy);
-        tempEnemy.transform.position = new Vector3(spawnPoint.transform.position.x, 0.89f, spawnPoint.transform.position.z);
+        GameObject tempEnemy;
+
+        Vector3 temp = new Vector3(spawnPoint.transform.position.x, spawnPoint.transform.position.y, spawnPoint.transform.position.z);
+        if (whichEnemy == 0)
+        {
+            tempEnemy = Instantiate<GameObject>(Enemy[0], temp, Quaternion.identity);
+        }
+        else if (whichEnemy == 1)
+        {
+            tempEnemy = Instantiate<GameObject>(Enemy[1], temp, Quaternion.identity);
+        }
+        else
+        {
+            tempEnemy = Instantiate<GameObject>(Enemy[2], temp, Quaternion.identity);
+        }
+        //tempEnemy.transform.position = new Vector3(spawnPoint.transform.position.x, spawnPoint.transform.position.y, spawnPoint.transform.position.z);
+        //tempEnemy.GetComponent<Enemy>().Ground();
         enemies.Add(tempEnemy);
         EnenmiesLeftToSpawn--;
     }
@@ -157,6 +168,28 @@ public class GameManager : MonoBehaviour
             {
                 Destroy(go);//need to limit spawns when getting close to end
             }
+        }
+    }
+
+    public void CodeRed()
+    {
+        foreach (LightController light in lightController)
+        {
+            LightController.LockDown = true;
+        }
+    }
+
+    public bool getIfSeen()
+    {
+        return PlayerSpotted;
+    }
+
+    public void setIfSeen(bool s)
+    {
+        PlayerSpotted = s;
+        if(s)
+        {
+            CodeRed();
         }
     }
 }

@@ -10,7 +10,6 @@ public class Enemy : MonoBehaviour
     public GameManager gm;
     public SkillManager sm;
 
-    public GameObject Player;
 
     public Material normal;
     public Material Death;
@@ -26,6 +25,7 @@ public class Enemy : MonoBehaviour
     public bool isDissolving = false;
     public float _Time = 0f;
     public int DissolveTime;
+    public float distanceBetweenEnemy;
 
     public float Health = 10f;
 
@@ -35,9 +35,11 @@ public class Enemy : MonoBehaviour
     public float speed = 1;
     public float fovAngle = 110f;
     public float sightDist = 2f;
-    private GameObject player;
+    public GameObject player;
     private SphereCollider col;
     private CapsuleCollider attackCol;
+    private float distance = 100;
+    private bool isIn = false;
 
     void Awake()
     {
@@ -67,6 +69,8 @@ public class Enemy : MonoBehaviour
 
         _Time = 0f;
         hurtFrames = hurtDuration;
+
+        
 
     }
 
@@ -101,6 +105,8 @@ public class Enemy : MonoBehaviour
             }
             Death.SetFloat("Time", _Time);
         }
+        distance = Vector3.Distance(this.transform.position, player.transform.position);
+
     }
 
     void FixedUpdate()
@@ -110,9 +116,10 @@ public class Enemy : MonoBehaviour
         destination = player.transform;
         Vector3 direction = player.transform.position - transform.position;
         float angle = Vector3.Angle(direction, transform.forward);
+        bool playerSpotted = gm.getIfSeen();
         //Debug.Log("angle is " + angle);
         Debug.DrawRay(transform.position + transform.up, direction.normalized * sightDist, Color.green);
-        if(Health <= 0)
+        if (Health <= 0)
         {
             navMeshAgent.isStopped = true;
             animator.SetBool("IsDead", true);
@@ -126,21 +133,43 @@ public class Enemy : MonoBehaviour
 
             {
                 //Debug.Log("Stage 3");
-                if (hit.collider.gameObject == player && !Physics.Raycast(transform.position + Vector3.up, direction.normalized * sightDist, out hit, attackCol.radius))
+                if (hit.collider.gameObject == player && !Physics.Raycast(transform.position + Vector3.up, direction.normalized * sightDist, out hit, attackCol.radius) && !isIn && !playerSpotted)
                 {
-                    //Debug.Log("Stage 4");
+                    //Debug.Log("Stage 4: " + distance);
                     SetDestination();
-                    navMeshAgent.isStopped = false;
+                    if(navMeshAgent.isStopped)
+                    {
+                        navMeshAgent.isStopped = false;
+                        
+                    }
+
                     animator.SetBool("IsMoving", true);
+
+                    if (gm.getIfSeen() == false)
+                        gm.setIfSeen(true);
+
                 }
-                else if (hit.collider.gameObject == player && Physics.Raycast(transform.position + Vector3.up, direction.normalized * sightDist, out hit, attackCol.radius))
+                if (distance <= distanceBetweenEnemy)
                 {
+                    //hit.collider.gameObject == player && Physics.Raycast(transform.position + Vector3.up, direction.normalized * sightDist, out hit, attackCol.radius)
+                    isIn = true;
                     navMeshAgent.isStopped = true;
                     Debug.Log("is in");
                     animator.SetBool("IsMoving", false);
                     animator.SetTrigger("Attack");
                 }
+                
             }
+        }
+        if (distance > distanceBetweenEnemy)
+        {
+            isIn = false;
+        }
+        if (playerSpotted && !isIn)
+        {
+            SetDestination();
+            navMeshAgent.isStopped = false;
+            animator.SetBool("IsMoving", true);
         }
         if (!navMeshAgent.pathPending && !navMeshAgent.hasPath)
         {
@@ -160,6 +189,7 @@ public class Enemy : MonoBehaviour
 
     public void takeDamage(float damageToTake = 1)
     {
+        gm.setIfSeen(true);
         Health -= damageToTake;
         if (GameManager.DebugMode)
         {
@@ -187,11 +217,13 @@ public class Enemy : MonoBehaviour
     public void death()
     {
         Debug.Log("fully died");
+        gm.RemoveEnemy(this.gameObject);
     }
 
     public void damage()
     {
         Debug.Log("delt damage");
+        player.GetComponent<Player>().takeDamage();
     }
     public void StopAttacking()
     {
@@ -219,5 +251,18 @@ public class Enemy : MonoBehaviour
 
     }
 
-    
+    public void Disolve()
+    {
+        //animator.SetBool("Disolve", true);
+        isDissolving = true;
+    }
+
+    public void Ground()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, -Vector3.up, out hit, 1f, 10))
+        {
+            navMeshAgent.Warp(new Vector3(transform.position.x, hit.point.y, transform.position.z));
+        }
+    }
 }

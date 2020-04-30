@@ -324,7 +324,7 @@ public class Player : MonoBehaviour
         
     }
 
-    private void OnCollisionEnter(Collision collision)
+    /*private void OnCollisionEnter(Collision collision)
     {
 
         GameObject go = collision.gameObject;
@@ -336,5 +336,5 @@ public class Player : MonoBehaviour
         }
         
         
-    }
+    }*/
 }
