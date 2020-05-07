@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
@@ -15,7 +17,6 @@ public class UIManager : MonoBehaviour
     public GameObject roundInfoPanel;
     public GameObject roundResultPanel;
     public GameObject ScorePanel;
-    public GameObject HealthPanel;
     public GameObject AmmoCounterPanel;
     public GameObject crosshair;
 
@@ -29,6 +30,11 @@ public class UIManager : MonoBehaviour
     public Button Skill2Button;
     public Button Skill3Button;
     public Button Skill4Button;
+
+    [Header("Settings Panels")]
+    public GameObject SettingsPanel;
+    public Button volumeButton;
+    public Button exit;
 
     [Header("Text Objects")]
     public Text ammoCounter;
@@ -44,6 +50,9 @@ public class UIManager : MonoBehaviour
     public int HealthPts = 30;
     public bool inspecting = false;
     public bool SkillMenuActive = false;
+    public bool SettingsMenuActive = false;
+    public AudioMixer audioMixer;
+    private bool clicked;
 
     private void Start()
     {
@@ -92,7 +101,35 @@ public class UIManager : MonoBehaviour
         {
             updateScore(100f);
         }
+
+
+        if (Input.GetKey(KeyCode.Escape))
+        {
+            SettingsPanel.gameObject.SetActive(true);
+            SettingsMenuActive = true;
+
+        }
+
+        if (SettingsMenuActive)
+        {
+            if (Input.GetKey(KeyCode.Escape))
+            {
+                SettingsPanel.gameObject.SetActive(false);
+                SettingsMenuActive = false;
+            }
+        }
+
+        if (!clicked)
+        {
+            volumeButton.onClick.AddListener(() => PlayAudio());
+        }
+        if (clicked)
+        {
+            volumeButton.onClick.AddListener(() => StopAudio());
+        }
     }
+
+
 
     public static void toggleMouseLock()
     {
@@ -180,7 +217,6 @@ public class UIManager : MonoBehaviour
         crosshair.SetActive(!crosshair.activeInHierarchy);
         roundInfoPanel.SetActive(!roundInfoPanel.activeInHierarchy);
         ScorePanel.SetActive(!ScorePanel.activeInHierarchy);
-        HealthPanel.SetActive(!HealthPanel.activeInHierarchy);
         AmmoCounterPanel.SetActive(!AmmoCounterPanel.activeInHierarchy);
     }
 
@@ -209,5 +245,23 @@ public class UIManager : MonoBehaviour
             Destroy(SkillsUI);
         }
         SkillMenuActive = !SkillMenuActive;
+    }
+
+    public void PlayAudio()
+    {
+        audioMixer.SetFloat("volume", 100);
+        clicked = true;
+    }
+
+    public void StopAudio()
+    {
+        audioMixer.SetFloat("volume", 0);
+        clicked = false;
+
+    }
+
+    public void ExitGame()
+    {
+        SceneManager.LoadScene("Main Menu");
     }
 }

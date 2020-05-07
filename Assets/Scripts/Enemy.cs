@@ -10,6 +10,17 @@ public class Enemy : MonoBehaviour
     public GameManager gm;
     public SkillManager sm;
 
+    [SerializeField]
+    bool patrolWaiting;
+
+    [SerializeField]
+    float totalWaitTime = 3f;
+
+    [SerializeField]
+    float switchProbability = 0.2f;
+
+    [SerializeField]
+    List<GameObject> patrolPoints;
 
     public Material normal;
     public Material Death;
@@ -32,6 +43,7 @@ public class Enemy : MonoBehaviour
     private Transform destination;
     NavMeshAgent navMeshAgent;
     private Animator animator;
+    public int damageDone;
     public float speed = 1;
     public float fovAngle = 110f;
     public float sightDist = 2f;
@@ -40,6 +52,12 @@ public class Enemy : MonoBehaviour
     private CapsuleCollider attackCol;
     private float distance = 100;
     private bool isIn = false;
+
+    public int currentPatrolIndex;
+    public bool travelling;
+    public bool waiting;
+    public bool patrolFoward;
+    public float waitTimer = 3;
 
     void Awake()
     {
@@ -70,7 +88,18 @@ public class Enemy : MonoBehaviour
         _Time = 0f;
         hurtFrames = hurtDuration;
 
-        
+        foreach (GameObject Wp in GameObject.FindGameObjectsWithTag("Waypoint"))
+        {
+            patrolPoints.Add(Wp);
+        }
+
+
+        if (patrolPoints != null && patrolPoints.Count >= 2)
+        {
+            currentPatrolIndex = UnityEngine.Random.Range(0, patrolPoints.Count);
+
+            SetPatrolDestination();
+        }
 
     }
 
@@ -101,11 +130,45 @@ public class Enemy : MonoBehaviour
             {
                 _Time = 0f;
                 isDissolving = false;
+                animator.SetBool("IsDead", false);
                 gm.RemoveEnemy(transform.gameObject);
             }
             Death.SetFloat("Time", _Time);
         }
         distance = Vector3.Distance(this.transform.position, player.transform.position);
+
+        if (gm.getIfSeen() == false)
+        {
+            if (travelling && navMeshAgent.remainingDistance <= 1.0f)
+            {
+                travelling = false;
+                animator.SetBool("IsMoving", false);
+
+                if (patrolWaiting)
+                {
+                    waiting = true;
+                    waitTimer = 0f;
+                }
+                else
+                {
+                    ChangePatrolPoint();
+                    SetPatrolDestination();
+                }
+            }
+
+            if (waiting)
+            {
+                waitTimer += Time.deltaTime;
+                if (waitTimer >= totalWaitTime)
+                {
+                    waiting = false;
+
+                    ChangePatrolPoint();
+                    SetPatrolDestination();
+                }
+
+            }
+        }
 
     }
 
@@ -125,57 +188,59 @@ public class Enemy : MonoBehaviour
             animator.SetBool("IsDead", true);
 
         }
-        else if (angle < fovAngle * 0.5f)
+        else
         {
-
-            //Debug.Log("Stage 2");
-            if (Physics.Raycast(transform.position + Vector3.up, direction.normalized * sightDist, out hit, col.radius))
-
+            if (angle < fovAngle * 0.5f)
             {
-                //Debug.Log("Stage 3");
-                if (hit.collider.gameObject == player && !Physics.Raycast(transform.position + Vector3.up, direction.normalized * sightDist, out hit, attackCol.radius) && !isIn && !playerSpotted)
+
+                //Debug.Log("Stage 2");
+                if (Physics.Raycast(transform.position + Vector3.up, direction.normalized * sightDist, out hit, col.radius))
+
                 {
-                    //Debug.Log("Stage 4: " + distance);
-                    SetDestination();
-                    if(navMeshAgent.isStopped)
+                    //Debug.Log("Stage 3");
+                    if (hit.collider.gameObject == player && !Physics.Raycast(transform.position + Vector3.up, direction.normalized * sightDist, out hit, attackCol.radius) && !isIn && !playerSpotted)
                     {
-                        navMeshAgent.isStopped = false;
-                        
+                        //Debug.Log("Stage 4: " + distance);
+                        SetDestination();
+                        if (navMeshAgent.isStopped)
+                        {
+                            navMeshAgent.isStopped = false;
+
+                        }
+
+                        animator.SetBool("IsMoving", true);
+
+                        if (gm.getIfSeen() == false)
+                            gm.setIfSeen(true);
+
+                    }
+                    if (distance <= distanceBetweenEnemy)
+                    {
+                        //hit.collider.gameObject == player && Physics.Raycast(transform.position + Vector3.up, direction.normalized * sightDist, out hit, attackCol.radius)
+                        isIn = true;
+                        navMeshAgent.isStopped = true;
+                        Debug.Log("is in");
+                        animator.SetBool("IsMoving", false);
+                        animator.SetTrigger("Attack");
                     }
 
-                    animator.SetBool("IsMoving", true);
-
-                    if (gm.getIfSeen() == false)
-                        gm.setIfSeen(true);
-
                 }
-                if (distance <= distanceBetweenEnemy)
-                {
-                    //hit.collider.gameObject == player && Physics.Raycast(transform.position + Vector3.up, direction.normalized * sightDist, out hit, attackCol.radius)
-                    isIn = true;
-                    navMeshAgent.isStopped = true;
-                    Debug.Log("is in");
-                    animator.SetBool("IsMoving", false);
-                    animator.SetTrigger("Attack");
-                }
-                
+            }
+            if (distance > distanceBetweenEnemy)
+            {
+                isIn = false;
+            }
+            if (playerSpotted && !isIn)
+            {
+                SetDestination();
+                navMeshAgent.isStopped = false;
+                animator.SetBool("IsMoving", true);
+            }
+            if (!navMeshAgent.pathPending && !navMeshAgent.hasPath)
+            {
+                animator.SetBool("IsMoving", false);
             }
         }
-        if (distance > distanceBetweenEnemy)
-        {
-            isIn = false;
-        }
-        if (playerSpotted && !isIn)
-        {
-            SetDestination();
-            navMeshAgent.isStopped = false;
-            animator.SetBool("IsMoving", true);
-        }
-        if (!navMeshAgent.pathPending && !navMeshAgent.hasPath)
-        {
-            animator.SetBool("IsMoving", false);
-        }
-
     }
 
     private void SetDestination()
@@ -184,6 +249,17 @@ public class Enemy : MonoBehaviour
         {
             Vector3 targetVector = destination.transform.position;
             navMeshAgent.SetDestination(targetVector);
+        }
+    }
+
+    private void SetPatrolDestination()
+    {
+        if (patrolPoints != null)
+        {
+            Vector3 targetVector = patrolPoints[currentPatrolIndex].transform.position;
+            navMeshAgent.SetDestination(targetVector);
+            animator.SetBool("IsMoving", true);
+            travelling = true;
         }
     }
 
@@ -198,8 +274,8 @@ public class Enemy : MonoBehaviour
         if (Health <= 0)
         {
             MR.material = Death;
+            navMeshAgent.isStopped = true;
             isDissolving = true;
-            //GameManager.RemoveEnemy(transform.gameObject);
             uim.updateScore(5);
             sm.grantXP(1);
         }
@@ -214,21 +290,22 @@ public class Enemy : MonoBehaviour
         //yield WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
     }
 
-    public void death()
-    {
-        Debug.Log("fully died");
-        gm.RemoveEnemy(this.gameObject);
-    }
-
     public void damage()
     {
         Debug.Log("delt damage");
-        player.GetComponent<Player>().takeDamage();
+        player.GetComponent<Player>().takeDamage(damageDone);
     }
     public void StopAttacking()
     {
         animator.SetBool("attacked", false);
     }
+
+    public void Dissolve()
+    {
+        isDissolving = true;
+    }
+
+
 
     private bool isGrounded()
     {
@@ -251,18 +328,32 @@ public class Enemy : MonoBehaviour
 
     }
 
-    public void Disolve()
-    {
-        //animator.SetBool("Disolve", true);
-        isDissolving = true;
-    }
-
     public void Ground()
     {
         RaycastHit hit;
         if (Physics.Raycast(transform.position, -Vector3.up, out hit, 1f, 10))
         {
             navMeshAgent.Warp(new Vector3(transform.position.x, hit.point.y, transform.position.z));
+        }
+    }
+
+    private void ChangePatrolPoint()
+    {
+        if (UnityEngine.Random.Range(0f, 1f) <= switchProbability)
+        {
+            patrolFoward = !patrolFoward;
+        }
+
+        if (patrolFoward)
+        {
+            currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Count;
+        }
+        else
+        {
+            if (--currentPatrolIndex < 0)
+            {
+                currentPatrolIndex = patrolPoints.Count - 1;
+            }
         }
     }
 }

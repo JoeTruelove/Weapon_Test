@@ -1797,7 +1797,10 @@ MonoBehaviour:
   uim: {fileID: 0}
   gm: {fileID: 0}
   sm: {fileID: 0}
-  Player: {fileID: 0}
+  patrolWaiting: 0
+  totalWaitTime: 3
+  switchProbability: 0.2
+  patrolPoints: []
   normal: {fileID: 2100000, guid: f4498c2020b78d54e968cea5a6b26b44, type: 2}
   Death: {fileID: 2100000, guid: cb5054446d66c584683254e59b816607, type: 2}
   MR: {fileID: 3978850369253752723}
@@ -1809,9 +1812,15 @@ MonoBehaviour:
   DissolveTime: 0
   distanceBetweenEnemy: 0
   Health: 10
-  speed: 1
+  speed: 1.2
   fovAngle: 110
   sightDist: 5
+  player: {fileID: 0}
+  currentPatrolIndex: 0
+  travelling: 0
+  waiting: 0
+  patrolFoward: 0
+  waitTimer: 3
 --- !u!195 &3978850369253752724
 NavMeshAgent:
   m_ObjectHideFlags: 0

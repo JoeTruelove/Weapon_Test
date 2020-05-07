@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
 public enum GameStage
 {
@@ -19,6 +21,7 @@ public class GameManager : MonoBehaviour
     public List<GameObject> Spawners;
     public GameObject Player;
     public List<GameObject> Enemy;
+    public AudioSource Siren;
 
 
     public float GracePeriodLength = 30f;
@@ -97,8 +100,15 @@ public class GameManager : MonoBehaviour
                 break;
             case GameStage.roundOver:
                 uim.updateRoundResult("You Win!");
+                StartCoroutine("LoadScene");
                 break;
         }
+    }
+
+    public IEnumerator LoadScene()
+    {
+        yield return new WaitForSeconds(5);
+        SceneManager.LoadScene("Main Menu");
     }
 
     GameObject FindBestSpawner()
@@ -190,6 +200,7 @@ public class GameManager : MonoBehaviour
         if(s)
         {
             CodeRed();
+            Siren.Play();
         }
     }
 }

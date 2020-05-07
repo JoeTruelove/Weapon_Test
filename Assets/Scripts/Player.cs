@@ -303,17 +303,17 @@ public class Player : MonoBehaviour
         //}
     }
 
-    public void takeDamage()
+    public void takeDamage(int delt)
     {
         if (Time.time >= TimeToNextDamage)
         {
-            Health--;
+            Health = Health - delt;
             if (Health == 0)
             {
                 uim.updateRoundResult("You Died!");
                 return;
             }
-            uim.updateHealth(-1);
+            uim.updateHealth(-delt);
             TimeToNextDamage = Time.time + DamageInterval;
             if (Health == MaxHealth - 1)
             {
